@@ -1,0 +1,34 @@
+{
+  "name": "oss-odm",
+  "version": "0.0.0",
+  "description": "Object document mapper for Open Search Server.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/lemonde/oss-odm.git"
+  },
+  "keywords": [
+    "oss",
+    "search"
+  ],
+  "author": "Greg Bergé <berge.greg@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lemonde/oss-odm/issues"
+  },
+  "homepage": "https://github.com/lemonde/oss-odm",
+  "devDependencies": {
+    "node-oss-client": "^0.2.7",
+    "sinon-chai": "^2.5.0",
+    "chai": "^1.9.1",
+    "mocha": "^1.18.2",
+    "sinon": "^1.9.0"
+  },
+  "dependencies": {
+    "async": "^0.2.10",
+    "lodash": "^2.4.1"
+  }
+}
