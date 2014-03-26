@@ -1,4 +1,4 @@
-# oss-odm
+# oss-odm [![Build Status](https://travis-ci.org/lemonde/oss-odm.svg?branch=master)](https://travis-ci.org/lemonde/oss-odm)
 
 Object document mapper for Open Search Server.
 
