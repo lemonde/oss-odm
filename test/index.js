@@ -150,7 +150,8 @@ describe('Index', function () {
         expect(res.documents).to.eql([]);
         expect(searcher.search).to.be.calledWith('my_index', {
           lang: 'ENGLISH',
-          query: 'my query'
+          query: 'my query',
+          filters: []
         });
         done();
       });
@@ -163,7 +164,8 @@ describe('Index', function () {
         expect(searcher.search).to.be.calledWith('my_index', {
           lang: 'ENGLISH',
           query: 'my query',
-          foo: 'bar'
+          foo: 'bar',
+          filters: []
         });
         done();
       });
@@ -179,7 +181,8 @@ describe('Index', function () {
           lang: 'ENGLISH',
           query: 'my query',
           foo: 'bar',
-          x: 'y'
+          x: 'y',
+          filters: []
         });
         done();
       });
@@ -194,7 +197,8 @@ describe('Index', function () {
         expect(searcher.search).to.be.calledWith('my_index', {
           lang: 'ENGLISH',
           query: 'my query',
-          z: 'x'
+          z: 'x',
+          filters: []
         });
         done();
       });
@@ -223,6 +227,137 @@ describe('Index', function () {
       index.search('my query', { template: 'custom' }, function (err, res) {
         if (err) return done(err);
         expect(res.documents).to.eql([{ foo: 'bar', x: 'y' }]);
+        done();
+      });
+    });
+
+    it('should ignore not defined filters', function (done) {
+      index.search('my query', { filters: { id: 'x' } }, function (err, res) {
+        if (err) return done(err);
+        expect(res.documents).to.eql([]);
+        expect(searcher.search).to.be.calledWith('my_index', {
+          lang: 'ENGLISH',
+          query: 'my query',
+          filters: []
+        });
+        done();
+      });
+    });
+
+    it('should map object filter', function (done) {
+      index.filters = {
+        id: function (value) {
+          return {
+            type: 'QueryFilter',
+            negative: false,
+            query: 'id:' + value
+          };
+        }
+      };
+
+      index.search('my query', { filters: { id: 'x' } }, function (err, res) {
+        if (err) return done(err);
+        expect(res.documents).to.eql([]);
+        expect(searcher.search).to.be.calledWith('my_index', {
+          lang: 'ENGLISH',
+          query: 'my query',
+          filters: [
+            {
+              type: 'QueryFilter',
+              negative: false,
+              query: 'id:x'
+            }
+          ]
+        });
+        done();
+      });
+    });
+
+    it('should map array of filters', function (done) {
+      index.filters = {
+        id: function (value) {
+          return [
+            {
+              type: 'QueryFilter',
+              negative: false,
+              query: 'id:' + value
+            },
+            {
+              type: 'QueryFilter',
+              negative: false,
+              query: 'id2:' + value
+            }
+          ];
+        }
+      };
+
+      index.search('my query', { filters: { id: 'x' } }, function (err, res) {
+        if (err) return done(err);
+        expect(res.documents).to.eql([]);
+        expect(searcher.search).to.be.calledWith('my_index', {
+          lang: 'ENGLISH',
+          query: 'my query',
+          filters: [
+            {
+              type: 'QueryFilter',
+              negative: false,
+              query: 'id:x'
+            },
+            {
+              type: 'QueryFilter',
+              negative: false,
+              query: 'id2:x'
+            }
+          ]
+        });
+        done();
+      });
+    });
+
+    it('should ignore it if the filter returns a falsy value', function (done) {
+      index.filters = {
+        id: function () {
+          return false;
+        }
+      };
+
+      index.search('my query', { filters: { id: 'x' } }, function (err, res) {
+        if (err) return done(err);
+        expect(res.documents).to.eql([]);
+        expect(searcher.search).to.be.calledWith('my_index', {
+          lang: 'ENGLISH',
+          query: 'my query',
+          filters: []
+        });
+        done();
+      });
+    });
+
+    it('should transmit context in filters', function (done) {
+      index.filters = {
+        id: function (value, context) {
+          return {
+            type: 'QueryFilter',
+            negative: false,
+            query: 'id:' + context.foo
+          };
+        }
+      };
+
+      index.search('my query', { filters: { id: 'x' }, context: { foo: 'bar' } }, function (err, res) {
+        if (err) return done(err);
+        expect(res.documents).to.eql([]);
+        expect(searcher.search).to.be.calledWith('my_index', {
+          lang: 'ENGLISH',
+          query: 'my query',
+          filters: [
+            {
+              type: 'QueryFilter',
+              negative: false,
+              query: 'id:bar'
+            }
+          ]
+        });
         done();
       });
     });

@@ -145,6 +145,28 @@ function outputFormatter(document) {
 }
 ```
 
+#### filters
+
+Type: `Object`
+
+Filters formatter that are used in `index.search`.
+
+```js
+new Index({
+  filters: {
+    id: formatIdFilter
+  }
+});
+
+function formatIdFilter(value, context) {
+  return {
+    type: 'QueryFilter',
+    negative: false,
+    query: 'id:' + value
+  };
+}
+```
+
 ### index.create(documents, [options], callback)
 
 Insert a new document in the index.
@@ -199,6 +221,23 @@ The template used to process the query, defaults to "default".
 
 ```js
 index.search('my query', { template: 'custom' }, function (err, res) { ... });
+```
+
+#### filters
+
+Type: `Object`
+
+Filters applied to the query. Filters are transformed using filter formatters defined in the constructor.
+
+```js
+index.search('my query', {
+  filters: {
+    id: 10
+  },
+  context: {
+    foo: 'bar'
+  }
+}, function (err, res) { ... });
 ```
 
 #### OSS search options
