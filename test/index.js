@@ -182,16 +182,28 @@ describe('Index', function () {
     });
 
     it('should be possible to format results', function (done) {
-      searchResult.documents = [{ id: 1 }];
+      searchResult.documents = [
+        {
+          pos: 0,
+          score: 0.2,
+          collapseCount: 0,
+          fields: [
+            {
+              fieldName: 'foo',
+              values: [ 'bar' ]
+            }
+          ]
+        }
+      ];
 
       index.format = function formatDocument(document) {
-        document.foo = 'bar';
+        document.x = 'y';
         return document;
       };
 
       index.search('my query', { template: 'custom' }, function (err, res) {
         if (err) return done(err);
-        expect(res.documents).to.eql([{ id: 1, foo: 'bar' }]);
+        expect(res.documents).to.eql([{ foo: 'bar', x: 'y' }]);
         done();
       });
     });
