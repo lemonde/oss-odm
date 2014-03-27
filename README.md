@@ -43,6 +43,18 @@ Name of the index.
 new Index({ name: 'my_index' });
 ```
 
+#### lang
+
+Type: `String`
+
+Default language of the index, defaults to "ENGLISH".
+
+```js
+new Index({
+  lang: 'FRENCH'
+});
+```
+
 #### indexers
 
 Type: `Array` or `Object`
@@ -106,16 +118,31 @@ new Index({
 });
 ```
 
-#### lang
+#### formatters
 
-Type: `String`
+Type: `Object`
 
-Default language of the index, defaults to "ENGLISH".
+You can specify an input (indexing) and an output (search) formatters. These formatter are applied to each documents.
 
 ```js
 new Index({
-  lang: 'FRENCH'
+  formatters: {
+    input: inputFormatter,
+    output: outputFormatter
+  }
 });
+
+function inputFormatter(document) {
+  // Add a timestamp key.
+  document.timestamp = Date.now();
+  return document;
+}
+
+function outputFormatter(document) {
+  // Convert id in Number.
+  document.id = parseInt(document.id, 10);
+  return document;
+}
 ```
 
 ### index.create(documents, [options], callback)

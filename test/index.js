@@ -104,6 +104,25 @@ describe('Index', function () {
         done();
       });
     });
+
+    it('should be possible to add a custom formatter', function (done) {
+      index.formatters.input = function (document) {
+        document.x = 'y';
+        return document;
+      };
+
+      index.create(documents, { lang: 'FRENCH' }, function (err) {
+        if (err) return done(err);
+        expect(indexer1.documents.create).to.be.calledWith('my_index', [{
+          lang: 'FRENCH',
+          fields: [
+            { name: 'my_custom_key', value: 'bar' },
+            { name: 'x', value: 'y' }
+          ]
+        }]);
+        done();
+      });
+    });
   });
 
   describe('#search', function () {
@@ -196,7 +215,7 @@ describe('Index', function () {
         }
       ];
 
-      index.format = function formatDocument(document) {
+      index.formatters.output = function formatDocument(document) {
         document.x = 'y';
         return document;
       };
