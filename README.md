@@ -234,7 +234,7 @@ index.search('my query', {
   filters: {
     id: 10
   },
-  context: {
+  filterOptions: {
     foo: 'bar'
   }
 }, function (err, res) { ... });

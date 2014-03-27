@@ -333,18 +333,18 @@ describe('Index', function () {
       });
     });
 
-    it('should transmit context in filters', function (done) {
+    it('should transmit options in filters', function (done) {
       index.filters = {
-        id: function (value, context) {
+        id: function (value, options) {
           return {
             type: 'QueryFilter',
             negative: false,
-            query: 'id:' + context.foo
+            query: 'id:' + options.foo
           };
         }
       };
 
-      index.search('my query', { filters: { id: 'x' }, context: { foo: 'bar' } }, function (err, res) {
+      index.search('my query', { filters: { id: 'x' }, filterOptions: { foo: 'bar' } }, function (err, res) {
         if (err) return done(err);
         expect(res.documents).to.eql([]);
         expect(searcher.search).to.be.calledWith('my_index', {
