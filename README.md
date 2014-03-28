@@ -244,6 +244,41 @@ index.search('my query', {
 
 All [search options known by OSS](https://github.com/jaeksoft/opensearchserver/wiki/Search-field) can be used in the search function.
 
+### syncManager.sync(clients, schemas)
+
+```js
+var indexer1 = oss.createClient({ host: 'indexer1' });
+var indexer2 = oss.createClient({ host: 'indexer2' });
+
+syncManager.sync([indexer1, indexer2], [
+  {
+    name: 'articles',
+    uniqueField: 'id',
+    defaultField: 'text',
+    fields: [
+      {
+        name: 'id',
+        indexed: true,
+        stored: true
+      },
+      {
+        name: 'text',
+        indexed: true,
+        stored: true
+      }
+    ]
+  }
+]);
+```
+
+### syncManager.drop(clients, names)
+
+```js
+var indexer1 = oss.createClient({ host: 'indexer1' });
+var indexer2 = oss.createClient({ host: 'indexer2' });
+
+syncManager.drop([indexer1, indexer2], ['articles']);
+```
 
 ## License
 
