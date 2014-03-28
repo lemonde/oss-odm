@@ -197,7 +197,7 @@ index.create([
 
 Search in the index.
 
-``js
+```js
 index.search('my query', function (err, res) { ... });
 ```
 
@@ -209,7 +209,7 @@ Type: `String`
 
 The language used for searching documents.
 
-``js
+```js
 index.search('my query', { lang: 'FRENCH' }, function (err, res) { ... });
 ```
 
