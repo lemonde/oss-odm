@@ -13,9 +13,7 @@ describe('Search sync manager', function () {
     sinon.stub(client.indexes, 'exists');
     sinon.stub(client.fields, 'createOrUpdate').yields();
     sinon.stub(client.fields, 'setUniqueDefault').yields();
-    sinon.stub(client.fields, 'list').yields(null, function() {
-      return { fields : [{name : 'my_field'}, {name : 'other_field'}]};
-    } );
+    sinon.stub(client.fields, 'list');
   });
 
   afterEach(function () {
@@ -61,6 +59,8 @@ describe('Search sync manager', function () {
     });
 
     it('should call client methods', function () {
+      client.fields.list.yields(null, {});
+
       // simulate that indexes not exists
       client.indexes.exists.yields('not exists error');
 
@@ -77,6 +77,8 @@ describe('Search sync manager', function () {
     });
 
     it('should not call indexes.create if indexes already exists', function () {
+      client.fields.list.yields(null, {});
+
       // simulate that indexes already exists
       client.indexes.exists.yields(null);
 
@@ -84,6 +86,34 @@ describe('Search sync manager', function () {
       expect(client.indexes.create).to.not.be.called;
       expect(client.fields.createOrUpdate).to.be.calledWith('idx1', { name: 'my_field' });
       expect(client.fields.createOrUpdate).to.be.calledWith('idx1', { name: 'other_field' });
+    });
+
+    it('should do nothing if indexes are already synced', function () {
+      client.fields.list.yields(null, {
+        unique: 'unique_field',
+        default: 'default_field',
+        fields : [
+          {
+            name : 'my_field',
+            indexed: 'NO',
+            stored: 'NO',
+            termVector: 'NO'
+          },
+          {
+            name : 'other_field',
+            indexed: 'NO',
+            stored: 'NO',
+            termVector: 'NO'
+          }
+        ]
+      });
+
+      // simulate that indexes not exists
+      client.indexes.exists.yields(null);
+
+      manager.sync(client, schemas);
+      expect(client.indexes.create).to.not.be.called;
+      expect(client.fields.createOrUpdate).not.to.be.called;
     });
   });
 });
