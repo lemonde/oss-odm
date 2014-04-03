@@ -125,6 +125,94 @@ describe('Index', function () {
     });
   });
 
+  describe('#destroy', function () {
+    var indexer1, indexer2, index, values;
+
+    beforeEach(function () {
+      indexer1 = createOssClient();
+      indexer2 = createOssClient();
+
+      index = new Index({
+        name: 'my_index',
+        indexers: [indexer1, indexer2]
+      });
+
+      values = [34928, 81238];
+
+      function createOssClient() {
+        var client = oss.createClient();
+        sinon.stub(client.documents, 'destroy').yields();
+        return client;
+      }
+    });
+
+    it('should destroy documents on each indexer', function (done) {
+      index.destroy(values, function (err) {
+        if (err) return done(err);
+        expect(indexer1.documents.destroy).to.be.calledWith('my_index', {
+          field: 'id',
+          values: values
+        });
+        expect(indexer2.documents.destroy).to.be.calledWith('my_index', {
+          field: 'id',
+          values: values
+        });
+        done();
+      });
+    });
+
+    it('should emit "destroy" event', function (done) {
+      var spy = sinon.spy();
+      index.on('destroy', spy);
+
+      index.destroy(values, function (err) {
+        if (err) return done(err);
+        expect(spy).to.be.calledWith(indexer1, 'my_index', {
+          field: 'id',
+          values: values
+        });
+        expect(spy).to.be.calledWith(indexer2, 'my_index', {
+          field: 'id',
+          values: values
+        });
+        done();
+      });
+    });
+
+    it('should emit an "error" event', function (done) {
+      var spy = sinon.spy();
+      index.on('error', spy);
+
+      var indexError = new Error('Indexing error.');
+      indexer1.documents.destroy.restore();
+      sinon.stub(indexer1.documents, 'destroy').yields(indexError);
+
+      index.destroy(values, function (err) {
+        if (err) return done(err);
+        expect(spy).to.be.calledWith(indexError, indexer1, 'my_index', {
+          field: 'id',
+          values: values
+        });
+        done();
+      });
+    });
+
+    it('should be possible to add options', function (done) {
+      index.destroy(values, { field: 'id_test' }, function (err) {
+        if (err) return done(err);
+        expect(indexer1.documents.destroy).to.be.calledWith('my_index', {
+          field: 'id_test',
+          values: values
+        });
+        expect(indexer2.documents.destroy).to.be.calledWith('my_index', {
+          field: 'id_test',
+          values: values
+        });
+        done();
+      });
+    });
+  });
+
   describe('#search', function () {
     var index, searcher, searchResult;
 

@@ -192,6 +192,25 @@ index.create([
 ], { lang: 'FRENCH' }, function (err) { ... });
 ```
 
+## index.destroy(values, [options], callback)
+
+Destroy a documents in the index.
+
+```js
+index.destroy(['182', '85'], function (err) { ... });
+```
+
+Some options are avalaibles:
+
+#### field
+
+Type: `String`
+
+The field used to match values, default to "id".
+
+```js
+index.destroy(['bob', 'tom'], { field: 'name' }, function (err) { ... });
+```
 
 ### index.search(query, [options], callback)
 
