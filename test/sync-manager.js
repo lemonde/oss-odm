@@ -14,6 +14,12 @@ describe('Search sync manager', function () {
     sinon.stub(client.fields, 'createOrUpdate').yields();
     sinon.stub(client.fields, 'setUniqueDefault').yields();
     sinon.stub(client.fields, 'list');
+    sinon.stub(client.templates, 'createOrUpdate').yields();
+    sinon.stub(client.templates, 'destroy').yields();
+    sinon.stub(client.templates, 'list', function (index, callback) {
+      if (index === 'idx1') return callback(null, { templates: [{ name: 'my_template' }] });
+      callback(null, { templates: [] });
+    });
   });
 
   afterEach(function () {
@@ -23,6 +29,9 @@ describe('Search sync manager', function () {
     client.fields.createOrUpdate.restore();
     client.fields.setUniqueDefault.restore();
     client.fields.list.restore();
+    client.templates.createOrUpdate.restore();
+    client.templates.destroy.restore();
+    client.templates.list.restore();
   });
 
   describe('#drop', function () {
@@ -49,6 +58,12 @@ describe('Search sync manager', function () {
             {
               name: 'other_field'
             }
+          ],
+          templates: [
+            {
+              name: 'my_template',
+              returnedFields: ['my_field']
+            }
           ]
         },
         {
@@ -67,6 +82,12 @@ describe('Search sync manager', function () {
       manager.sync(client, schemas);
       expect(client.indexes.create).to.be.calledWith('idx1');
       expect(client.indexes.create).to.be.calledWith('idx2');
+      expect(client.templates.createOrUpdate).to.be.calledWith('idx1', 'my_template', {
+        returnedFields: ['my_field']
+      });
+      expect(client.templates.list).to.be.calledWith('idx1');
+      expect(client.templates.list).to.be.calledWith('idx2');
+      expect(client.templates.destroy).to.not.be.called;
       expect(client.fields.createOrUpdate).to.be.calledWith('idx1', { name: 'my_field' });
       expect(client.fields.createOrUpdate).to.be.calledWith('idx1', { name: 'other_field' });
       expect(client.fields.setUniqueDefault).to.be.calledWith('idx1', {
