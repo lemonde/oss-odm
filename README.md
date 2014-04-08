@@ -149,7 +149,7 @@ function outputFormatter(document) {
 
 Type: `Object`
 
-Filters formatter that are used in `index.search`.
+Filters formatter that can be used in `index.search`.
 
 ```js
 new Index({
@@ -165,6 +165,29 @@ function formatIdFilter(value, context) {
     query: 'id:' + value
   };
 }
+```
+
+#### joins
+
+Type: `Object`
+
+Joins that can be used in `index.search`.
+
+```js
+new Index({
+  joins: {
+    myJoin: {
+      index: customIndex,
+      queryTemplate: 'customQueryTemplate',
+      localField: 'local_id',
+      foreignField: 'id',
+      type: 'INNER',
+      returnFields: false,
+      returnScores: false,
+      eturnFacets: false
+    }
+  }
+});
 ```
 
 ### index.create(documents, [options], callback)
@@ -192,7 +215,7 @@ index.create([
 ], { lang: 'FRENCH' }, function (err) { ... });
 ```
 
-## index.destroy(values, [options], callback)
+### index.destroy(values, [options], callback)
 
 Destroy a documents in the index.
 
@@ -257,6 +280,26 @@ index.search('my query', {
     foo: 'bar'
   }
 }, function (err, res) { ... });
+```
+
+#### joins
+
+Type: `Object`
+
+Joins applied to the query. Joins used the joins defined in the constructor.
+
+```js
+index.search('my query', {
+  joins: {
+    myJoin: {
+      query: 'join query',
+      template: 'myTemplate',
+      filters: {
+        myJoinFilter: 'test'
+      }
+    }
+  }
+})
 ```
 
 #### OSS search options
