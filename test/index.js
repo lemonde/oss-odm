@@ -459,111 +459,159 @@ describe('Index', function () {
       });
     });
 
-    it('should handle joins', function (done) {
-      index.filters = {
-        id: function (value) {
-          return {
-            type: 'QueryFilter',
-            negative: false,
-            query: 'id:' + value
-          };
-        }
-      };
-
-      index.joins = {
-        articles: {
-          index: new Index({
-            name: 'articles',
-            templates: {
-              searchText: {
-                returnedFields: [
-                  'id'
-                ],
-                searchFields: [
-                  {
-                    field: 'title',
-                    mode: 'TERM_AND_PHRASE',
-                    boost: 2
-                  },
-                  {
-                    field: 'text',
-                    mode: 'TERM_AND_PHRASE',
-                    boost: 1
-                  }
-                ]
-              }
-            },
-            searcher: searcher,
-            filters: {
-              sectionId: function (value) {
-                return {
-                  type: 'QueryFilter',
-                  negative: false,
-                  query: 'section_id:' + value
-                };
-              },
-              roleId: function (value) {
-                return {
-                  type: 'QueryFilter',
-                  negative: true,
-                  query: 'role_id:' + value
-                };
-              }
-            }
-          }),
-          queryTemplate: 'generic',
-          localField: 'article_id',
-          foreignField: 'id',
-          type: 'INNER',
-          returnFields: false,
-          returnScores: false,
-          returnFacets: false
-        }
-      };
-
-
-      index.search('my query', {
-        filters: { id: 210384 },
-        joins: {
-          articles: {
-            query: 'join query',
-            template: 'searchText',
-            filters: {
-              sectionId: 213,
-              roleId: 230
-            }
-          }
-        }
-      }, function (err, res) {
-        if (err) return done(err);
-        expect(res.documents).to.eql([]);
-        expect(searcher.search).to.be.calledWith('my_index', {
-          lang: 'ENGLISH',
-          query: 'my query',
-          filters: [
-            {
+    describe('joins', function () {
+      beforeEach(function () {
+        index.filters = {
+          id: function (value) {
+            return {
               type: 'QueryFilter',
               negative: false,
-              query: 'id:210384'
-            }
-          ],
-          joins: [
-            {
-              foreignField: 'id',
-              indexName: 'articles',
-              localField: 'article_id',
-              queryString: '(section_id:213) AND -(role_id:230) AND (title:(join query)^2 OR text:(join query)^1)',
-              queryTemplate: 'generic',
-              returnFacets: false,
-              returnFields: false,
-              returnScores: false,
-              type: 'INNER'
-            }
-          ]
-        });
-        done();
+              query: 'id:' + value
+            };
+          }
+        };
+
+        index.joins = {
+          articles: {
+            index: new Index({
+              name: 'articles',
+              templates: {
+                searchText: {
+                  returnedFields: [
+                    'id'
+                  ],
+                  searchFields: [
+                    {
+                      field: 'title',
+                      mode: 'TERM_AND_PHRASE',
+                      boost: 2
+                    },
+                    {
+                      field: 'text',
+                      mode: 'TERM_AND_PHRASE',
+                      boost: 1
+                    }
+                  ]
+                }
+              },
+              searcher: searcher,
+              filters: {
+                sectionId: function (value) {
+                  return {
+                    type: 'QueryFilter',
+                    negative: false,
+                    query: 'section_id:' + value
+                  };
+                },
+                roleId: function (value) {
+                  return {
+                    type: 'QueryFilter',
+                    negative: true,
+                    query: 'role_id:' + value
+                  };
+                }
+              }
+            }),
+            queryTemplate: 'generic',
+            localField: 'article_id',
+            foreignField: 'id',
+            type: 'INNER',
+            returnFields: false,
+            returnScores: false,
+            returnFacets: false
+          }
+        };
       });
 
+      it('should support query and filters', function (done) {
+        index.search('my query', {
+          filters: { id: 210384 },
+          joins: {
+            articles: {
+              query: 'join query',
+              template: 'searchText',
+              filters: {
+                sectionId: 213,
+                roleId: 230
+              }
+            }
+          }
+        }, function (err, res) {
+          if (err) return done(err);
+          expect(res.documents).to.eql([]);
+          expect(searcher.search).to.be.calledWith('my_index', {
+            lang: 'ENGLISH',
+            query: 'my query',
+            filters: [
+              {
+                type: 'QueryFilter',
+                negative: false,
+                query: 'id:210384'
+              }
+            ],
+            joins: [
+              {
+                foreignField: 'id',
+                indexName: 'articles',
+                localField: 'article_id',
+                queryString: '(section_id:213) AND -(role_id:230) AND (title:(join query)^2 OR text:(join query)^1)',
+                queryTemplate: 'generic',
+                returnFacets: false,
+                returnFields: false,
+                returnScores: false,
+                type: 'INNER'
+              }
+            ]
+          });
+          done();
+        });
+
+      });
+
+      it('should support empty query', function (done) {
+        index.search('my query', {
+          filters: { id: 210384 },
+          joins: {
+            articles: {
+              query: '',
+              template: 'searchText',
+              filters: {
+                sectionId: 213,
+                roleId: 230
+              }
+            }
+          }
+        }, function (err, res) {
+          if (err) return done(err);
+          expect(res.documents).to.eql([]);
+          expect(searcher.search).to.be.calledWith('my_index', {
+            lang: 'ENGLISH',
+            query: 'my query',
+            filters: [
+              {
+                type: 'QueryFilter',
+                negative: false,
+                query: 'id:210384'
+              }
+            ],
+            joins: [
+              {
+                foreignField: 'id',
+                indexName: 'articles',
+                localField: 'article_id',
+                queryString: '(section_id:213) AND -(role_id:230) AND (title:(*:*)^2 OR text:(*:*)^1)',
+                queryTemplate: 'generic',
+                returnFacets: false,
+                returnFields: false,
+                returnScores: false,
+                type: 'INNER'
+              }
+            ]
+          });
+          done();
+        });
+
+      });
     });
   });
 });
