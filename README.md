@@ -149,7 +149,7 @@ function outputFormatter(document) {
 
 Type: `Object`
 
-Filters formatter that can be used in `index.search`.
+Filters formatter that can be used in `index.[search|moreLikeThis]`.
 
 ```js
 new Index({
