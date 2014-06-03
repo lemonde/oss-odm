@@ -28,7 +28,26 @@ describe('Output formatter', function () {
       };
     });
 
-    it('should return nothing', function () {
+    it('should return flatten document', function () {
+      expect(formatter(document)).to.eql({
+        foo: 'bar',
+        bar: 'foo'
+      });
+    });
+  });
+
+  describe('given document info', function () {
+    beforeEach(function () {
+      document = {
+        info: {
+          some: 'info'
+        },
+        foo: 'bar',
+        bar: ['foo']
+      };
+    });
+
+    it('should filter document info', function () {
       expect(formatter(document)).to.eql({
         foo: 'bar',
         bar: 'foo'
