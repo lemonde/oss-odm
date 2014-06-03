@@ -306,6 +306,47 @@ index.search('my query', {
 
 All [search options known by OSS](https://github.com/jaeksoft/opensearchserver/wiki/Search-field) can be used in the search function.
 
+### index.moreLikeThis(text, [options], callback)
+
+More like this query on the index.
+
+```js
+index.moreLikeThis('my text pattern', function (err, res) { ... });
+```
+
+Some options are avalaibles:
+
+#### lang
+
+Type: `String`
+
+The language used for searching documents.
+
+```js
+index.search('my query', { lang: 'FRENCH' }, function (err, res) { ... });
+```
+
+#### filters
+
+Type: `Object`
+
+Filters applied to the query. Filters are transformed using filter formatters defined in the constructor.
+
+```js
+index.search('my query', {
+  filters: {
+    id: 10
+  },
+  filterOptions: {
+    foo: 'bar'
+  }
+}, function (err, res) { ... });
+```
+
+#### OSS more like this options
+
+All [more like this options known by OSS](http://www.opensearchserver.com/documentation/api_v2/more-like-this/query.html) can be used in the moreLikeThis method.
+
 ### syncManager.sync(clients, schemas)
 
 ```js
