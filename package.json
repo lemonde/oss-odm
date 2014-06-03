@@ -4,7 +4,7 @@
   "description": "Object document mapper for Open Search Server.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --recursive"
   },
   "repository": {
     "type": "git",
