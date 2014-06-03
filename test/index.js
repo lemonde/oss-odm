@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var oss = require('node-oss-client');
 var Index = require('../lib/index');
 var expect = require('chai').use(require('sinon-chai')).expect;
@@ -311,10 +312,10 @@ describe('Index', function () {
         }
       ];
 
-      index.formatters.output = function formatDocument(document) {
+      index.formatters.output = _.compose(function formatDocument(document) {
         document.x = 'y';
         return document;
-      };
+      }, require('../lib/formatters/output'));
 
       index.search('my query', { template: 'custom' }, function (err, res) {
         if (err) return done(err);
@@ -611,6 +612,214 @@ describe('Index', function () {
           done();
         });
 
+      });
+    });
+  });
+
+  describe('#moreLikeThis', function () {
+    var index, searcher, moreLikeThisResult;
+
+    beforeEach(function () {
+      moreLikeThisResult = {};
+      searcher = createOssClient();
+
+      index = new Index({
+        name: 'my_index',
+        searcher: searcher
+      });
+
+      function createOssClient() {
+        var client = oss.createClient();
+        sinon.stub(client, 'moreLikeThis').yields(null, moreLikeThisResult);
+        return client;
+      }
+    });
+
+    it('should be possible to search without options', function (done) {
+      index.moreLikeThis('my text pattern', function (err, res) {
+        if (err) return done(err);
+        expect(res.documents).to.eql([]);
+        expect(searcher.moreLikeThis).to.be.calledWith('my_index', {
+          lang: 'ENGLISH',
+          likeText: 'my text pattern',
+          filters: []
+        });
+        done();
+      });
+    });
+
+    it('should be possible to search with options', function (done) {
+      index.moreLikeThis('my text pattern', { foo: 'bar' }, function (err, res) {
+        if (err) return done(err);
+        expect(res.documents).to.eql([]);
+        expect(searcher.moreLikeThis).to.be.calledWith('my_index', {
+          lang: 'ENGLISH',
+          likeText: 'my text pattern',
+          foo: 'bar',
+          filters: []
+        });
+        done();
+      });
+    });
+
+    it('should be possible to format results', function (done) {
+      moreLikeThisResult.documents = [
+        {
+          pos: 0,
+          score: 0.2,
+          collapseCount: 0,
+          fields: [
+            {
+              fieldName: 'foo',
+              values: [ 'bar' ]
+            }
+          ]
+        }
+      ];
+
+      index.formatters.output = _.compose(function formatDocument(document) {
+        document.x = 'y';
+        return document;
+      }, require('../lib/formatters/output'));
+
+      index.moreLikeThis('my text pattern', function (err, res) {
+        if (err) return done(err);
+        expect(res.documents).to.eql([{ foo: 'bar', x: 'y' }]);
+        done();
+      });
+    });
+
+    it('should ignore not defined filters', function (done) {
+      index.moreLikeThis('my text pattern', { filters: { id: 'x' } }, function (err, res) {
+        if (err) return done(err);
+        expect(res.documents).to.eql([]);
+        expect(searcher.moreLikeThis).to.be.calledWith('my_index', {
+          lang: 'ENGLISH',
+          likeText: 'my text pattern',
+          filters: []
+        });
+        done();
+      });
+    });
+
+    it('should map object filter', function (done) {
+      index.filters = {
+        id: function (value) {
+          return {
+            type: 'QueryFilter',
+            negative: false,
+            query: 'id:' + value
+          };
+        }
+      };
+
+      index.moreLikeThis('my text pattern', { filters: { id: 'x' } }, function (err, res) {
+        if (err) return done(err);
+        expect(res.documents).to.eql([]);
+        expect(searcher.moreLikeThis).to.be.calledWith('my_index', {
+          lang: 'ENGLISH',
+          likeText: 'my text pattern',
+          filters: [
+            {
+              type: 'QueryFilter',
+              negative: false,
+              query: 'id:x'
+            }
+          ]
+        });
+        done();
+      });
+    });
+
+    it('should map array of filters', function (done) {
+      index.filters = {
+        id: function (value) {
+          return [
+            {
+              type: 'QueryFilter',
+              negative: false,
+              query: 'id:' + value
+            },
+            {
+              type: 'QueryFilter',
+              negative: false,
+              query: 'id2:' + value
+            }
+          ];
+        }
+      };
+
+      index.moreLikeThis('my text pattern', { filters: { id: 'x' } }, function (err, res) {
+        if (err) return done(err);
+        expect(res.documents).to.eql([]);
+        expect(searcher.moreLikeThis).to.be.calledWith('my_index', {
+          lang: 'ENGLISH',
+          likeText: 'my text pattern',
+          filters: [
+            {
+              type: 'QueryFilter',
+              negative: false,
+              query: 'id:x'
+            },
+            {
+              type: 'QueryFilter',
+              negative: false,
+              query: 'id2:x'
+            }
+          ]
+        });
+        done();
+      });
+    });
+
+    it('should ignore it if the filter returns a falsy value', function (done) {
+      index.filters = {
+        id: function () {
+          return false;
+        }
+      };
+
+      index.moreLikeThis('my text pattern', { filters: { id: 'x' } }, function (err, res) {
+        if (err) return done(err);
+        expect(res.documents).to.eql([]);
+        expect(searcher.moreLikeThis).to.be.calledWith('my_index', {
+          lang: 'ENGLISH',
+          likeText: 'my text pattern',
+          filters: []
+        });
+        done();
+      });
+    });
+
+    it('should transmit options in filters', function (done) {
+      index.filters = {
+        id: function (value, options) {
+          return {
+            type: 'QueryFilter',
+            negative: false,
+            query: 'id:' + options.foo
+          };
+        }
+      };
+
+      index.moreLikeThis('my text pattern', {
+        filters: { id: 'x' },
+        filterOptions: { foo: 'bar' }
+      }, function (err, res) {
+        if (err) return done(err);
+        expect(res.documents).to.eql([]);
+        expect(searcher.moreLikeThis).to.be.calledWith('my_index', {
+          lang: 'ENGLISH',
+          likeText: 'my text pattern',
+          filters: [
+            {
+              type: 'QueryFilter',
+              negative: false,
+              query: 'id:bar'
+            }
+          ]
+        });
+        done();
       });
     });
   });

@@ -4,7 +4,7 @@
   "description": "Object document mapper for Open Search Server.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --recursive"
   },
   "repository": {
     "type": "git",
@@ -21,11 +21,11 @@
   },
   "homepage": "https://github.com/lemonde/oss-odm",
   "devDependencies": {
-    "node-oss-client": "^0.3.0",
-    "sinon-chai": "^2.5.0",
     "chai": "^1.9.1",
     "mocha": "^1.18.2",
-    "sinon": "^1.9.0"
+    "node-oss-client": "^0.4.0",
+    "sinon": "^1.9.0",
+    "sinon-chai": "^2.5.0"
   },
   "dependencies": {
     "async": "^0.2.10",

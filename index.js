@@ -2,5 +2,5 @@
  * Expose module.
  */
 
-exports.Index = require('./lib/index');
+exports.Index = require('./lib');
 exports.syncManager = require('./lib/sync-manager');
