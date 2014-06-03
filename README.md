@@ -320,10 +320,10 @@ Some options are avalaibles:
 
 Type: `String`
 
-The language used for searching documents.
+The language used for querying documents.
 
 ```js
-index.search('my query', { lang: 'FRENCH' }, function (err, res) { ... });
+index.moreLikeThis('my text pattern', { lang: 'FRENCH' }, function (err, res) { ... });
 ```
 
 #### filters
@@ -333,7 +333,7 @@ Type: `Object`
 Filters applied to the query. Filters are transformed using filter formatters defined in the constructor.
 
 ```js
-index.search('my query', {
+index.moreLikeThis('my text pattern', {
   filters: {
     id: 10
   },
