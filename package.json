@@ -25,7 +25,7 @@
     "lodash": "~3.7.0"
   },
   "devDependencies": {
-    "node-oss-client": "~0.4.0",
+    "node-oss-client": "~0.5.0",
     "sinon-chai": "~2.7.0",
     "chai": "~2.2.0",
     "mocha": "~2.2.4",
