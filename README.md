@@ -1,6 +1,9 @@
 # oss-odm [![Build Status](https://travis-ci.org/lemonde/oss-odm.svg?branch=master)](https://travis-ci.org/lemonde/oss-odm)
 
-Object document mapper for Open Search Server.
+Object document mapper for [Open Search Server](http://www.open-search-server.com/).
+
+See also parent module [node-oss-client](https://github.com/lemonde/node-oss-client).
+
 
 ## Install
 
@@ -194,14 +197,22 @@ new Index({
 
 Insert a new document in the index.
 
+Note : if an array is provided as value, it triggers a multi-valued field insertion.
+
 ```js
 index.create([
-  { title: 'My first document' },
-  { title: 'My second document' }
+  {
+    title: 'My first document',
+    foo: 'bar'
+  },
+  {
+    title: 'My second document',
+    ids: [23, 34]
+  }
 ], function (err) { ... });
 ```
 
-Some options are avalaibles:
+Some options are available:
 
 #### lang
 
@@ -223,7 +234,7 @@ Destroy a documents in the index.
 index.destroy(['182', '85'], function (err) { ... });
 ```
 
-Some options are avalaibles:
+Some options are available:
 
 #### field
 
@@ -243,7 +254,7 @@ Search in the index.
 index.search('my query', function (err, res) { ... });
 ```
 
-Some options are avalaibles:
+Some options are available:
 
 #### lang
 
@@ -341,6 +352,7 @@ var indexer2 = oss.createClient({ host: 'indexer2' });
 
 syncManager.drop([indexer1, indexer2], ['articles']);
 ```
+
 
 ## License
 
