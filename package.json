@@ -1,6 +1,6 @@
 {
   "name": "oss-odm",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "description": "Object document mapper for Open Search Server.",
   "main": "index.js",
   "scripts": {
