@@ -283,6 +283,51 @@ describe('Index', function () {
       });
     });
 
+    describe('query with special chars', function () {
+      it('should remove :\()?!^*[]{}~', function (done) {
+        index.search('my query with special chars :\()?!^*[]{}~', function (err, res) {
+          if (err) return done(err);
+          expect(res.documents).to.eql([]);
+          expect(searcher.search).to.have.been.calledWith('my_index', {
+            lang: 'ENGLISH',
+            query: 'my query with special chars',
+            filters: [],
+            joins: []
+          });
+          done();
+        });
+      });
+
+      it('should not remove quoted chars', function (done) {
+        index.search('my query: with "special chars : quoted":', function (err, res) {
+          if (err) return done(err);
+          expect(res.documents).to.eql([]);
+          expect(searcher.search).to.have.been.calledWith('my_index', {
+            lang: 'ENGLISH',
+            query: 'my query with "special chars : quoted"',
+            filters: [],
+            joins: []
+          });
+          done();
+        });
+      });
+
+      describe('quotes', function () {
+        it('should leave an even number of quotes', function (done) {
+          index.search('my "query "with some" quotes', function (err, res) {
+            if (err) return done(err);
+            expect(searcher.search).to.have.been.calledWith('my_index', {
+              lang: 'ENGLISH',
+              query: 'my query "with some" quotes',
+              filters: [],
+              joins: []
+            });
+            done();
+          });
+        });
+      });
+    });
+
     it('should be possible to search with options', function (done) {
       index.search('my query', { foo: 'bar' }, function (err, res) {
         if (err) return done(err);
