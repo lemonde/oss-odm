@@ -1,7 +1,5 @@
 const oss = require('node-oss-client');
 const Index = require('../lib/index');
-const expect = require('chai').use(require('sinon-chai')).expect;
-const sinon = require('sinon');
 const _ = require('lodash');
 
 describe('Index', () => {

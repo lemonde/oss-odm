@@ -1,7 +1,5 @@
 const oss = require('node-oss-client');
 const manager = require('../lib/sync-manager');
-const expect = require('chai').use(require('sinon-chai')).expect;
-const sinon = require('sinon');
 
 describe('Search sync manager', () => {
   let client;

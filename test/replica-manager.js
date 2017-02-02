@@ -1,7 +1,5 @@
 const oss = require('node-oss-client');
 const replicaManager = require('../lib/replica-manager');
-const expect = require('chai').use(require('sinon-chai')).expect;
-const sinon = require('sinon');
 
 describe('Replica manager', () => {
   let client, schemas;
