@@ -1,12 +1,12 @@
-var oss = require('node-oss-client');
-var manager = require('../lib/sync-manager');
-var expect = require('chai').use(require('sinon-chai')).expect;
-var sinon = require('sinon');
+const oss = require('node-oss-client');
+const manager = require('../lib/sync-manager');
+const expect = require('chai').use(require('sinon-chai')).expect;
+const sinon = require('sinon');
 
-describe('Search sync manager', function () {
-  var client;
+describe('Search sync manager', () => {
+  let client;
 
-  beforeEach(function () {
+  beforeEach(() => {
     client = oss.createClient();
     sinon.stub(client.indexes, 'destroy').yields();
     sinon.stub(client.indexes, 'create').yields();
@@ -16,13 +16,13 @@ describe('Search sync manager', function () {
     sinon.stub(client.fields, 'list');
     sinon.stub(client.templates, 'createOrUpdate').yields();
     sinon.stub(client.templates, 'destroy').yields();
-    sinon.stub(client.templates, 'list', function (index, callback) {
+    sinon.stub(client.templates, 'list', (index, callback) => {
       if (index === 'idx1') return callback(null, { templates: [{ name: 'my_template' }] });
       callback(null, { templates: [] });
     });
   });
 
-  afterEach(function () {
+  afterEach(() => {
     client.indexes.destroy.restore();
     client.indexes.create.restore();
     client.indexes.exists.restore();
@@ -34,18 +34,18 @@ describe('Search sync manager', function () {
     client.templates.list.restore();
   });
 
-  describe('#drop', function () {
-    it('should call client methods', function () {
+  describe('#drop', () => {
+    it('should call client methods', () => {
       manager.drop(client, ['idx1', 'idx2']);
       expect(client.indexes.destroy).to.be.calledWith('idx1');
       expect(client.indexes.destroy).to.be.calledWith('idx2');
     });
   });
 
-  describe('#sync', function () {
-    var schemas;
+  describe('#sync', () => {
+    let schemas;
 
-    beforeEach(function () {
+    beforeEach(() => {
       schemas = [
         {
           name: 'idx1',
@@ -73,7 +73,7 @@ describe('Search sync manager', function () {
       ];
     });
 
-    it('should call client methods', function () {
+    it('should call client methods', () => {
       client.fields.list.yields(null, {});
 
       // simulate that indexes not exists
@@ -97,7 +97,7 @@ describe('Search sync manager', function () {
       expect(client.fields.list).to.be.called;
     });
 
-    it('should not call indexes.create if indexes already exists', function () {
+    it('should not call indexes.create if indexes already exists', () => {
       client.fields.list.yields(null, {});
 
       // simulate that indexes already exists
@@ -109,7 +109,7 @@ describe('Search sync manager', function () {
       expect(client.fields.createOrUpdate).to.be.calledWith('idx1', { name: 'other_field' });
     });
 
-    it('should do nothing if indexes are already synced', function () {
+    it('should do nothing if indexes are already synced',  () => {
       client.fields.list.yields(null, {
         unique: 'unique_field',
         default: 'default_field',
