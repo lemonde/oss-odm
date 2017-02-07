@@ -13,7 +13,7 @@ describe('Replica manager', () => {
 
     client.indexers = [
       {
-        createReplicationIndex: replicationIndexStub,
+        createIndexReplication: replicationIndexStub,
         indexes: { replicate: replicateStub }
       }
     ];
@@ -40,8 +40,8 @@ describe('Replica manager', () => {
 
     it('should call client method to create createReplicationIndex', (done) => {
       replicaManager.replicateAllIndexes(client, schemas, function() {
-        expect(client.indexers[0].createReplicationIndex).to.have.been.called;
-        expect(client.indexers[0].createReplicationIndex).to.have.been.calledWithMatch('articles')
+        expect(client.indexers[0].createIndexReplication).to.have.been.called;
+        expect(client.indexers[0].createIndexReplication).to.have.been.calledWithMatch('articles')
         done();
       });
     });
