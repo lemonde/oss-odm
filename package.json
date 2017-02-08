@@ -21,11 +21,11 @@
   },
   "homepage": "https://github.com/lemonde/oss-odm",
   "dependencies": {
-    "async": "~0.9.0",
+    "async": "2.1.4",
     "lodash": "~3.7.0"
   },
   "devDependencies": {
-    "node-oss-client": "~2.0.0",
+    "node-oss-client": "2.0.1",
     "sinon-chai": "~2.7.0",
     "chai": "~2.3.0",
     "mocha": "~2.2.4",

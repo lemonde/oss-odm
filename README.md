@@ -355,7 +355,7 @@ syncManager.drop([indexer1, indexer2], ['articles']);
 
 ### replicaManager.replicateAllIndexes(clients, schemas, cb)
 
-  Creates as many as replication indexes (based on schemas argument) on searcher passed as argument in clients and starts a replication on each of the indexes.
+  Creates as many as replication indexes (based on schemas argument) on searchers passed as argument in clients and starts a replication on each of the searchers.
 
 ```js
 const indexer1 = oss.createClient({ host: 'indexer1' });

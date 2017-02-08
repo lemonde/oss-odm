@@ -17,7 +17,7 @@ describe('Replica manager', () => {
         indexes: { replicate: replicateStub }
       }
     ];
-    client.searcher = { indexes: { create: createIndexStub, exists: indexExistsStub } };
+    client.searchers = [{ indexes: { create: createIndexStub, exists: indexExistsStub } }];
     schemas = { name: 'articles' };
 
   });
@@ -25,20 +25,20 @@ describe('Replica manager', () => {
   describe('#replicateAllIndexes', () => {
     it('should call client method to check if index exists in searcher', function (done) {
       replicaManager.replicateAllIndexes(client, schemas, () => {
-        expect(client.searcher.indexes.exists).to.have.been.called;
+        expect(client.searchers[0].indexes.exists).to.have.been.called;
         done();
       });
     });
 
     it('should call client method to create non existent indexes', function (done) {
       replicaManager.replicateAllIndexes(client, schemas, () => {
-        expect(client.searcher.indexes.create).to.have.been.called;
-        expect(client.searcher.indexes.create).to.have.been.calledWithMatch('articles')
+        expect(client.searchers[0].indexes.create).to.have.been.called;
+        expect(client.searchers[0].indexes.create).to.have.been.calledWithMatch('articles')
         done();
       });
     });
 
-    it('should call client method to create createReplicationIndex', (done) => {
+    it('should call client method to create createIndexReplication', (done) => {
       replicaManager.replicateAllIndexes(client, schemas, function() {
         expect(client.indexers[0].createIndexReplication).to.have.been.called;
         expect(client.indexers[0].createIndexReplication).to.have.been.calledWithMatch('articles')
