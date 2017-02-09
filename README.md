@@ -14,20 +14,20 @@ npm install oss-odm
 ## Usage
 
 ```js
-var oss = require('node-oss-client');
-var Index = require('oss-odm').Index;
+const oss = require('node-oss-client');
+const Index = require('oss-odm').Index;
 
-var index = new Index({
+const index = new Index({
   name: 'my_index',
   indexers: oss.createClient(),
   searcher: oss.createClient()
 });
 
 // Insert a new document in "my_index".
-index.create({ title: 'My first document' }, function (err) { ... });
+index.create({ title: 'My first document' }, (err) => { ... });
 
 // Search in "my_index".
-index.search('my query', function (err, res) {
+index.search('my query', (err, res) => {
   console.log(res.documents); // [{ title: 'My first document' }]
 });
 ```
@@ -78,7 +78,7 @@ OSS client used to search.
 
 ```js
 var searcher = oss.createClient({ host: 'searcher' });
-new Index({ searcher: searcher });
+new Index({ searcher });
 ```
 
 #### templates
@@ -187,7 +187,7 @@ new Index({
       type: 'INNER',
       returnFields: false,
       returnScores: false,
-      eturnFacets: false
+      returnFacets: false
     }
   }
 });
@@ -209,7 +209,7 @@ index.create([
     title: 'My second document',
     ids: [23, 34]
   }
-], function (err) { ... });
+], (err) => { ... });
 ```
 
 Some options are available:
@@ -223,7 +223,7 @@ The language of the document to index, default to the index language.
 ```js
 index.create([
   { title: 'My first document' }
-], { lang: 'FRENCH' }, function (err) { ... });
+], { lang: 'FRENCH' }, (err) => { ... });
 ```
 
 ### index.destroy(values, [options], callback)
@@ -231,7 +231,7 @@ index.create([
 Destroy a documents in the index.
 
 ```js
-index.destroy(['182', '85'], function (err) { ... });
+index.destroy(['182', '85'], (err) => { ... });
 ```
 
 Some options are available:
@@ -243,7 +243,7 @@ Type: `String`
 The field used to match values, default to "id".
 
 ```js
-index.destroy(['bob', 'tom'], { field: 'name' }, function (err) { ... });
+index.destroy(['bob', 'tom'], { field: 'name' }, (err) => { ... });
 ```
 
 ### index.search(query, [options], callback)
@@ -251,7 +251,7 @@ index.destroy(['bob', 'tom'], { field: 'name' }, function (err) { ... });
 Search in the index.
 
 ```js
-index.search('my query', function (err, res) { ... });
+index.search('my query', (err, res) => { ... });
 ```
 
 Some options are available:
@@ -263,7 +263,7 @@ Type: `String`
 The language used for searching documents.
 
 ```js
-index.search('my query', { lang: 'FRENCH' }, function (err, res) { ... });
+index.search('my query', { lang: 'FRENCH' }, (err, res) => { ... });
 ```
 
 #### template
@@ -273,7 +273,7 @@ Type: `String`
 The template used to process the query, defaults to "default".
 
 ```js
-index.search('my query', { template: 'custom' }, function (err, res) { ... });
+index.search('my query', { template: 'custom' }, (err, res) => { ... });
 ```
 
 #### filters
@@ -290,7 +290,7 @@ index.search('my query', {
   filterOptions: {
     foo: 'bar'
   }
-}, function (err, res) { ... });
+}, (err, res) => { ... });
 ```
 
 #### joins
@@ -320,8 +320,8 @@ All [search options known by OSS](https://github.com/jaeksoft/opensearchserver/w
 ### syncManager.sync(clients, schemas)
 
 ```js
-var indexer1 = oss.createClient({ host: 'indexer1' });
-var indexer2 = oss.createClient({ host: 'indexer2' });
+const indexer1 = oss.createClient({ host: 'indexer1' });
+const indexer2 = oss.createClient({ host: 'indexer2' });
 
 syncManager.sync([indexer1, indexer2], [
   {
@@ -347,12 +347,24 @@ syncManager.sync([indexer1, indexer2], [
 ### syncManager.drop(clients, names)
 
 ```js
-var indexer1 = oss.createClient({ host: 'indexer1' });
-var indexer2 = oss.createClient({ host: 'indexer2' });
+const indexer1 = oss.createClient({ host: 'indexer1' });
+const indexer2 = oss.createClient({ host: 'indexer2' });
 
 syncManager.drop([indexer1, indexer2], ['articles']);
 ```
 
+### replicaManager.replicateAllIndexes(clients, schemas, cb)
+
+  Creates as many as replication indexes (based on schemas argument) on searchers passed as argument in clients and starts a replication on each of the searchers.
+
+```js
+const indexer1 = oss.createClient({ host: 'indexer1' });
+const indexes = [ { name: 'my_index_1' }, { name: 'my_index_2' } ]
+
+replicaManager.replicateAllIndexes(indexer1,  indexes, (err, res ) => {
+  // Code callback here ....
+});
+```
 
 ## License
 

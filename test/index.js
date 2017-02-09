@@ -1,16 +1,14 @@
-var oss = require('node-oss-client');
-var Index = require('../lib/index');
-var expect = require('chai').use(require('sinon-chai')).expect;
-var sinon = require('sinon');
-var _ = require('lodash');
+const oss = require('node-oss-client');
+const Index = require('../lib/index');
+const _ = require('lodash');
 
-describe('Index', function () {
+describe('Index', () => {
 
-  describe('#create', function () {
-    var indexer1, indexer2, index, documents;
-    var expectedOssInput, expectedOssInputFields1, expectedOssInputFields2;
+  describe('#create', () => {
+    let indexer1, indexer2, index, documents;
+    let expectedOssInput, expectedOssInputFields1, expectedOssInputFields2;
 
-    beforeEach(function () {
+    beforeEach(() => {
       indexer1 = createOssClient();
       indexer2 = createOssClient();
 
@@ -55,28 +53,28 @@ describe('Index', function () {
       ];
 
       function createOssClient() {
-        var client = oss.createClient();
+        const client = oss.createClient();
         sinon.stub(client.documents, 'create').yields();
         return client;
       }
     });
 
-    it('should format to correct OSS inputs', function (done) {
-      index.create(documents, function (err) {
+    it('should format to correct OSS inputs', (done) => {
+      index.create(documents, (err) => {
         if (err) return done(err);
         expect(indexer1.documents.create).to.have.been.calledWith('my_index', expectedOssInput);
         done();
       });
     });
 
-    describe('when given a single document', function() {
-      it('should format to correct OSS inputs', function (done) {
-        var singleDocument = documents[1];
-        var singleExpectedOssInput = [{
+    describe('when given a single document', () => {
+      it('should format to correct OSS inputs', (done) => {
+        const singleDocument = documents[1];
+        const singleExpectedOssInput = [{
           lang: 'ENGLISH',
           fields: expectedOssInputFields2
         }];
-        index.create(singleDocument, function (err) {
+        index.create(singleDocument, (err) => {
           if (err) return done(err);
           expect(indexer1.documents.create).to.have.been.calledWith('my_index', singleExpectedOssInput);
           done();
@@ -84,8 +82,8 @@ describe('Index', function () {
       });
     });
 
-    it('should create documents on each indexer', function (done) {
-      index.create(documents, function (err) {
+    it('should create documents on each indexer', (done) => {
+      index.create(documents, (err) => {
         if (err) return done(err);
         expect(indexer1.documents.create).to.have.been.calledWith('my_index', expectedOssInput);
         expect(indexer2.documents.create).to.have.been.calledWith('my_index', expectedOssInput);
@@ -93,11 +91,11 @@ describe('Index', function () {
       });
     });
 
-    it('should emit the "create" event', function (done) {
-      var spy = sinon.spy();
+    it('should emit the "create" event', (done) => {
+      const spy = sinon.spy();
       index.on('create', spy);
 
-      index.create(documents, function (err) {
+      index.create(documents, (err) => {
         if (err) return done(err);
         expect(spy).to.have.been.calledWith(indexer1, 'my_index', expectedOssInput);
         expect(spy).to.have.been.calledWith(indexer2, 'my_index', expectedOssInput);
@@ -105,16 +103,16 @@ describe('Index', function () {
       });
     });
 
-    describe('on error', function() {
-      it('should emit an "error" event', function (done) {
-        var spy = sinon.spy();
+    describe('on error', () => {
+      it('should emit an "error" event', (done) => {
+        const spy = sinon.spy();
         index.on('error', spy);
 
-        var indexError = new Error('Indexing error.');
+        const indexError = new Error('Indexing error.');
         indexer1.documents.create.restore();
         sinon.stub(indexer1.documents, 'create').yields(indexError);
 
-        index.create(documents, function (err) {
+        index.create(documents,(err) => {
           if (err) return done(err);
           expect(spy).to.have.been.calledWith(indexError, indexer1, 'my_index', expectedOssInput);
           done();
@@ -122,18 +120,18 @@ describe('Index', function () {
       });
     });
 
-    describe('options', function() {
+    describe('options', () => {
       var specificExpectedOssInput;
       beforeEach(function() {
         specificExpectedOssInput = _.cloneDeep(expectedOssInput);
       });
 
-      describe('lang', function() {
-        it('should be handled', function (done) {
+      describe('lang', () => {
+        it('should be handled', (done) => {
           specificExpectedOssInput[0].lang = 'FRENCH';
           specificExpectedOssInput[1].lang = 'FRENCH';
 
-          index.create(documents, { lang: 'FRENCH' }, function (err) {
+          index.create(documents, { lang: 'FRENCH' }, (err) => {
             if (err) return done(err);
             expect(indexer1.documents.create).to.have.been.calledWith('my_index', specificExpectedOssInput);
             expect(indexer2.documents.create).to.have.been.calledWith('my_index', specificExpectedOssInput);
@@ -142,9 +140,9 @@ describe('Index', function () {
         });
       });
 
-      describe('custom formatter', function() {
-        it('should be handled', function (done) {
-          index.formatters.input = function (document) {
+      describe('custom formatter', () => {
+        it('should be handled', (done) => {
+          index.formatters.input = (document) => {
             document.x = 'y';
             return document;
           };
@@ -152,7 +150,7 @@ describe('Index', function () {
           specificExpectedOssInput[0].fields.push({ name: 'x', value: 'y' });
           specificExpectedOssInput[1].fields.push({ name: 'x', value: 'y' });
 
-          index.create(documents, function (err) {
+          index.create(documents, (err) => {
             if (err) return done(err);
             expect(indexer1.documents.create).to.have.been.calledWith('my_index', specificExpectedOssInput);
             done();
@@ -162,10 +160,10 @@ describe('Index', function () {
     });
   });
 
-  describe('#destroy', function () {
-    var indexer1, indexer2, index, values;
+  describe('#destroy', () => {
+    let indexer1, indexer2, index, values;
 
-    beforeEach(function () {
+    beforeEach(() => {
       indexer1 = createOssClient();
       indexer2 = createOssClient();
 
@@ -177,54 +175,54 @@ describe('Index', function () {
       values = [34928, 81238];
 
       function createOssClient() {
-        var client = oss.createClient();
+        const client = oss.createClient();
         sinon.stub(client.documents, 'destroy').yields();
         return client;
       }
     });
 
-    it('should destroy documents on each indexer', function (done) {
-      index.destroy(values, function (err) {
+    it('should destroy documents on each indexer', (done) => {
+      index.destroy(values, (err) => {
         if (err) return done(err);
         expect(indexer1.documents.destroy).to.have.been.calledWith('my_index', {
           field: 'id',
-          values: values
+          values
         });
         expect(indexer2.documents.destroy).to.have.been.calledWith('my_index', {
           field: 'id',
-          values: values
+          values
         });
         done();
       });
     });
 
-    it('should emit "destroy" event', function (done) {
-      var spy = sinon.spy();
+    it('should emit "destroy" event', (done) => {
+      const spy = sinon.spy();
       index.on('destroy', spy);
 
-      index.destroy(values, function (err) {
+      index.destroy(values, (err) => {
         if (err) return done(err);
         expect(spy).to.have.been.calledWith(indexer1, 'my_index', {
           field: 'id',
-          values: values
+          values
         });
         expect(spy).to.have.been.calledWith(indexer2, 'my_index', {
           field: 'id',
-          values: values
+          values
         });
         done();
       });
     });
 
-    it('should emit an "error" event', function (done) {
-      var spy = sinon.spy();
+    it('should emit an "error" event', (done) => {
+      const spy = sinon.spy();
       index.on('error', spy);
 
-      var indexError = new Error('Indexing error.');
+      const indexError = new Error('Indexing error.');
       indexer1.documents.destroy.restore();
       sinon.stub(indexer1.documents, 'destroy').yields(indexError);
 
-      index.destroy(values, function (err) {
+      index.destroy(values, (err) => {
         if (err) return done(err);
         expect(spy).to.have.been.calledWith(indexError, indexer1, 'my_index', {
           field: 'id',
@@ -234,43 +232,40 @@ describe('Index', function () {
       });
     });
 
-    it('should be possible to add options', function (done) {
-      index.destroy(values, { field: 'id_test' }, function (err) {
+    it('should be possible to add options', (done) => {
+      index.destroy(values, { field: 'id_test' }, (err) => {
         if (err) return done(err);
         expect(indexer1.documents.destroy).to.have.been.calledWith('my_index', {
           field: 'id_test',
-          values: values
+          values
         });
         expect(indexer2.documents.destroy).to.have.been.calledWith('my_index', {
           field: 'id_test',
-          values: values
+          values
         });
         done();
       });
     });
   });
 
-  describe('#search', function () {
-    var index, searcher, searchResult;
+  describe('#search', () => {
+    let index, searcher, searchResult;
 
     beforeEach(function () {
       searchResult = {};
       searcher = createOssClient();
 
-      index = new Index({
-        name: 'my_index',
-        searcher: searcher
-      });
+      index = new Index({ name: 'my_index', searcher: searcher });
 
       function createOssClient() {
-        var client = oss.createClient();
+        const client = oss.createClient();
         sinon.stub(client, 'search').yields(null, searchResult);
         return client;
       }
     });
 
-    it('should be possible to search without options', function (done) {
-      index.search('my query', function (err, res) {
+    it('should be possible to search without options', (done) => {
+      index.search('my query', (err, res) => {
         if (err) return done(err);
         expect(res.documents).to.eql([]);
         expect(searcher.search).to.have.been.calledWith('my_index', {
@@ -283,8 +278,8 @@ describe('Index', function () {
       });
     });
 
-    it('should be possible to search with options', function (done) {
-      index.search('my query', { foo: 'bar' }, function (err, res) {
+    it('should be possible to search with options', (done) => {
+      index.search('my query', { foo: 'bar' }, (err, res) => {
         if (err) return done(err);
         expect(res.documents).to.eql([]);
         expect(searcher.search).to.have.been.calledWith('my_index', {
@@ -298,10 +293,10 @@ describe('Index', function () {
       });
     });
 
-    it('should extend with the default template', function (done) {
+    it('should extend with the default template', (done) => {
       index.templates.default = { x: 'y' };
 
-      index.search('my query', { foo: 'bar' }, function (err, res) {
+      index.search('my query', { foo: 'bar' }, (err, res) => {
         if (err) return done(err);
         expect(res.documents).to.eql([]);
         expect(searcher.search).to.have.been.calledWith('my_index', {
@@ -316,10 +311,10 @@ describe('Index', function () {
       });
     });
 
-    it('should extend with a custom template', function (done) {
+    it('should extend with a custom template', (done) => {
       index.templates.custom = { z: 'x' };
 
-      index.search('my query', { template: 'custom' }, function (err, res) {
+      index.search('my query', { template: 'custom' }, (err, res) => {
         if (err) return done(err);
         expect(res.documents).to.eql([]);
         expect(searcher.search).to.have.been.calledWith('my_index', {
@@ -333,7 +328,7 @@ describe('Index', function () {
       });
     });
 
-    it('should be possible to format results', function (done) {
+    it('should be possible to format results', (done) => {
       searchResult.documents = [
         {
           pos: 0,
@@ -353,15 +348,15 @@ describe('Index', function () {
         return document;
       };
 
-      index.search('my query', { template: 'custom' }, function (err, res) {
+      index.search('my query', { template: 'custom' }, (err, res) => {
         if (err) return done(err);
         expect(res.documents).to.eql([{ foo: 'bar', x: 'y' }]);
         done();
       });
     });
 
-    it('should ignore not defined filters', function (done) {
-      index.search('my query', { filters: { id: 'x' } }, function (err, res) {
+    it('should ignore not defined filters', (done) => {
+      index.search('my query', { filters: { id: 'x' } }, (err, res) => {
         if (err) return done(err);
         expect(res.documents).to.eql([]);
         expect(searcher.search).to.have.been.calledWith('my_index', {
@@ -374,9 +369,9 @@ describe('Index', function () {
       });
     });
 
-    it('should map object filter', function (done) {
+    it('should map object filter', (done) => {
       index.filters = {
-        id: function (value) {
+        id: (value) => {
           return {
             type: 'QueryFilter',
             negative: false,
@@ -385,7 +380,7 @@ describe('Index', function () {
         }
       };
 
-      index.search('my query', { filters: { id: 'x' } }, function (err, res) {
+      index.search('my query', { filters: { id: 'x' } }, (err, res) => {
         if (err) return done(err);
         expect(res.documents).to.eql([]);
         expect(searcher.search).to.have.been.calledWith('my_index', {
@@ -404,9 +399,9 @@ describe('Index', function () {
       });
     });
 
-    it('should map array of filters', function (done) {
+    it('should map array of filters', (done) => {
       index.filters = {
-        id: function (value) {
+        id: (value) => {
           return [
             {
               type: 'QueryFilter',
@@ -422,7 +417,7 @@ describe('Index', function () {
         }
       };
 
-      index.search('my query', { filters: { id: 'x' } }, function (err, res) {
+      index.search('my query', { filters: { id: 'x' } }, (err, res) => {
         if (err) return done(err);
         expect(res.documents).to.eql([]);
         expect(searcher.search).to.have.been.calledWith('my_index', {
@@ -446,14 +441,10 @@ describe('Index', function () {
       });
     });
 
-    it('should ignore it if the filter returns a falsy value', function (done) {
-      index.filters = {
-        id: function () {
-          return false;
-        }
-      };
+    it('should ignore it if the filter returns a falsy value', (done) => {
+      index.filters = { id: () => false };
 
-      index.search('my query', { filters: { id: 'x' } }, function (err, res) {
+      index.search('my query', { filters: { id: 'x' } }, (err, res) => {
         if (err) return done(err);
         expect(res.documents).to.eql([]);
         expect(searcher.search).to.have.been.calledWith('my_index', {
@@ -466,9 +457,9 @@ describe('Index', function () {
       });
     });
 
-    it('should transmit options in filters', function (done) {
+    it('should transmit options in filters', (done) => {
       index.filters = {
-        id: function (value, options) {
+        id: (value, options) => {
           return {
             type: 'QueryFilter',
             negative: false,
@@ -477,7 +468,7 @@ describe('Index', function () {
         }
       };
 
-      index.search('my query', { filters: { id: 'x' }, filterOptions: { foo: 'bar' } }, function (err, res) {
+      index.search('my query', { filters: { id: 'x' }, filterOptions: { foo: 'bar' } }, (err, res) => {
         if (err) return done(err);
         expect(res.documents).to.eql([]);
         expect(searcher.search).to.have.been.calledWith('my_index', {
@@ -496,10 +487,10 @@ describe('Index', function () {
       });
     });
 
-    describe('joins', function () {
-      beforeEach(function () {
+    describe('joins', () => {
+      beforeEach(() => {
         index.filters = {
-          id: function (value) {
+          id: (value) => {
             return {
               type: 'QueryFilter',
               negative: false,
@@ -533,14 +524,14 @@ describe('Index', function () {
               },
               searcher: searcher,
               filters: {
-                sectionId: function (value) {
+                sectionId: (value) => {
                   return {
                     type: 'QueryFilter',
                     negative: false,
                     query: 'section_id:' + value
                   };
                 },
-                roleId: function (value) {
+                roleId: (value) => {
                   return {
                     type: 'QueryFilter',
                     negative: true,
@@ -560,7 +551,7 @@ describe('Index', function () {
         };
       });
 
-      it('should support query and filters', function (done) {
+      it('should support query and filters', (done) => {
         index.search('my query', {
           filters: { id: 210384 },
           joins: {
@@ -573,7 +564,7 @@ describe('Index', function () {
               }
             }
           }
-        }, function (err, res) {
+        }, (err, res) => {
           if (err) return done(err);
           expect(res.documents).to.eql([]);
           expect(searcher.search).to.have.been.calledWith('my_index', {
@@ -605,7 +596,7 @@ describe('Index', function () {
 
       });
 
-      it('should support empty query', function (done) {
+      it('should support empty query', (done) => {
         index.search('my query', {
           filters: { id: 210384 },
           joins: {
@@ -618,7 +609,7 @@ describe('Index', function () {
               }
             }
           }
-        }, function (err, res) {
+        }, (err, res) => {
           if (err) return done(err);
           expect(res.documents).to.eql([]);
           expect(searcher.search).to.have.been.calledWith('my_index', {
